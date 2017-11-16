@@ -39,9 +39,9 @@ The major packages used are:
 See [this blog post](https://www.sandersdenardi.com/) for a more in-depth discussion of how the project works.
 
 To get started
-* Add individual pages to the `src/views` directory with filename ending in `Page.jsx` (such as `LoginPage.jsx`)
-* Specify which view to use in a particular route (by adding `ctx.state.view = 'LoginPage';` to the route handler)
-* Run the app (Dev: `npm run watch`, Prod: `npm run gulp && node index`)
+* Add individual pages to the `src/views` directory (including any subdirectory) with filename ending in `Page.jsx` (such as `UserPage.jsx`)
+* Specify which view to use in a particular route by adding `ctx.state.view = 'UserPage';` in the route handler (the filename without the `.jsx` extension)
+* Run the app (Dev: `npm run watch`, Prod: `npm run gulp && NODE_ENV=production node index`)
 
 ### License
 
