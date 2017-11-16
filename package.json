@@ -1,0 +1,54 @@
+{
+  "name": "koa-react-universal-multi-page",
+  "version": "1.0.0",
+  "description": "Universal, multi-page app using Koa 2 and React 16",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/sedenardi/koa-react-universal-multi-page.git"
+  },
+  "author": "Sanders DeNardi <sedenardi@gmail.com> (https://www.sandersdenardi.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sedenardi/koa-react-universal-multi-page/issues"
+  },
+  "homepage": "https://github.com/sedenardi/koa-react-universal-multi-page#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "dependencies": {
+    "babel-preset-react": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "glob": "^7.1.2",
+    "koa": "^2.4.1",
+    "koa-router": "^7.3.0",
+    "koa-static": "^4.0.1",
+    "lodash": "^4.17.4",
+    "prop-types": "^15.6.0",
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.0.2",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "del": "^3.0.0",
+    "eslint": "^4.11.0",
+    "eslint-plugin-react": "^7.4.0",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-dependencies": "^0.1.1",
+    "gulp-fixed-template": "^1.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^3.0.0",
+    "nodemon": "^1.12.1",
+    "uglify-es": "^3.1.9",
+    "vinyl": "^2.1.0",
+    "webpack": "^3.8.1"
+  },
+  "scripts": {
+    "gulp": "gulp",
+    "nodemon": "nodemon -e js,jsx,html --ignore build/ --ignore static/ --ignore node_modules/ --inspect index.js",
+    "start": "node server.js",
+    "watch": "gulp watch & npm run nodemon"
+  }
+}

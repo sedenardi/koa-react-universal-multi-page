@@ -1,0 +1,135 @@
+const gulp = require('gulp');
+const path = require('path');
+const del = require('del');
+const rename = require('gulp-rename');
+const fixedTemplate = require('gulp-fixed-template');
+const uglifyjs = require('uglify-es');
+const composer = require('gulp-uglify/composer');
+const uglify = composer(uglifyjs, console);
+const dependencies = require('gulp-dependencies');
+const PageDependencyFinder = require('./build/PageDependencyFinder');
+
+const fs = require('fs');
+const util = require('util');
+const readFileAsync = util.promisify(fs.readFile);
+
+const WebpackStream = require('./build/WebpackStream');
+
+const buildOutputDir = path.resolve(__dirname, './build/output');
+const distDir = path.resolve(__dirname, './static');
+const viewsDir = path.resolve(__dirname, './src/views');
+const templatePath = path.join(__dirname, './build/pageTemplate.js');
+
+gulp.task('cleanBuildOutput', () => { return del([buildOutputDir + '/*']); });
+gulp.task('cleanDistAll', () => { return del([distDir + '/**/*']); });
+
+const buildTemplate = () => {
+  return fixedTemplate(require(templatePath), (file) => {
+    const fileParts = file.path.split('/');
+    const fileName = fileParts[fileParts.length - 1];
+    return {
+      moduleName: fileName.replace('.jsx', ''),
+      modulePath: file.path
+    };
+  });
+};
+
+gulp.task('getDependencies', () => {
+  return gulp.src(viewsDir + '/**/*Page.jsx')
+    .pipe(dependencies({
+      clean: true,
+      match: /from '([.|..]+[\/]+.*)'/g,
+      basepath: '/',
+      replace: (f) => {
+        if (!f.endsWith('.js') && !f.endsWith('.jsx')) {
+          return `${f}.js`;
+        } else {
+          return f;
+        }
+      }
+    }));
+});
+
+let depObj = {};
+gulp.task('readDependencies', () => {
+  return readFileAsync('dependencies.json').then((res) => {
+    depObj = JSON.parse(res);
+    return Promise.resolve();
+  });
+});
+
+const firstRun = Date.now();
+const incrementalBuild = () => {
+  return gulp.src(['src/**/*.{js,jsx}'], { since: gulp.lastRun(incrementalBuild) || firstRun })
+    .pipe(new PageDependencyFinder({ depObj: depObj }))
+    .pipe(buildTemplate())
+    .pipe(rename((path) => {
+      path.dirname = '/';
+      path.extname = '.js';
+    }))
+    .pipe(gulp.dest(buildOutputDir))
+    .pipe(new WebpackStream({
+      production: false,
+      outputPath: path.join(distDir, '/js')
+    }));
+};
+
+gulp.task('uglifyJs', () => {
+  return gulp.src(distDir + '/js/**/*')
+    .pipe(uglify())
+    .pipe(gulp.dest(distDir + '/js'));
+});
+
+const buildAllPages = () => {
+  return gulp.src(viewsDir + '/**/*Page.jsx')
+    .pipe(buildTemplate())
+    .pipe(rename((path) => {
+      path.dirname = '/';
+      path.extname = '.js';
+    }))
+    .pipe(gulp.dest(buildOutputDir));
+};
+
+gulp.task('buildJSProd', () => {
+  return buildAllPages()
+    .pipe(new WebpackStream({
+      production: true,
+      outputPath: path.join(distDir, '/js')
+    }));
+});
+gulp.task('buildJSDev', () => {
+  return buildAllPages()
+    .pipe(new WebpackStream({
+      production: false,
+      outputPath: path.join(distDir, '/js')
+    }));
+});
+
+gulp.task('default', gulp.series(
+  gulp.parallel(
+    'cleanDistAll',
+    'cleanBuildOutput'
+  ),
+  gulp.series('buildJSProd', 'uglifyJs')
+));
+
+gulp.task('defaultDev', gulp.series(
+  gulp.parallel(
+    'cleanDistAll',
+    'cleanBuildOutput'
+  ),
+  'buildJSDev'
+));
+
+gulp.task('watchJs', () => {
+  gulp.watch(['src/**/*.{js,jsx}'], gulp.series(
+    'getDependencies',
+    'readDependencies',
+    incrementalBuild
+  ));
+});
+
+gulp.task('watch', gulp.series(
+  'defaultDev',
+  'watchJs'
+));

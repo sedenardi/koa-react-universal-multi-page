@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%- title %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <% if (vendorScript) { %>
+    <script type="text/javascript" src="/static/js/<%- vendorScript %>"></script>
+    <% } %>
+  </head>
+  <body>
+    <div id="page"><%= body %></div>
+    <script id="props" type="application/json"><%= props %></script>
+    <script type="text/javascript" src="/static/js/<%- script %>"></script>
+  </body>
+</html>
