@@ -14,13 +14,14 @@ const pages = _.reduce(pageFiles, (result, fileName) => {
   if (result[key]) {
     throw new Error(`Duplicate page found: ${key}`);
   }
-  result[key] = React.createFactory(require(fileName).default);
+  result[key] = require(fileName).default;
   return result;
 }, {});
 
 module.exports = function(ctx) {
   if (pages[ctx.state.view]) {
-    return ReactDOMServer.renderToString(pages[ctx.state.view](ctx.state.props));
+    const element = React.createElement(pages[ctx.state.view], ctx.state.props);
+    return ReactDOMServer.renderToString(element);
   } else {
     throw new Error(`Missing view: ${ctx.state.view}`);
   }
