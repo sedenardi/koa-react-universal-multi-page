@@ -1,7 +1,7 @@
 koa-react-universal-multi-page
 ==============
 
-A boilerplate app to create universal, multi-page apps using Koa and React.
+A boilerplate app to create universal, multi-page apps using Koa and React. See accompanying blog post [here](https://sandersdenardi.com/universal-multi-page-react/).
 
 ### Introduction
 
@@ -36,7 +36,7 @@ The major packages used are:
 
 ### Usage
 
-See [this blog post](https://www.sandersdenardi.com/) for a more in-depth discussion of how the project works.
+See [this blog post](https://sandersdenardi.com/universal-multi-page-react/) for a more in-depth discussion of how the project works.
 
 To get started
 * Add individual pages to the `src/views` directory (including any subdirectory) with filename ending in `Page.jsx` (such as `UserPage.jsx`)
