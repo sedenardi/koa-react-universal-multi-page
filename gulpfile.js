@@ -6,12 +6,7 @@ const fixedTemplate = require('gulp-fixed-template');
 const uglifyjs = require('uglify-es');
 const composer = require('gulp-uglify/composer');
 const uglify = composer(uglifyjs, console);
-const dependencies = require('gulp-dependencies');
-const PageDependencyFinder = require('./build/PageDependencyFinder');
-
-const fs = require('fs');
-const util = require('util');
-const readFileAsync = util.promisify(fs.readFile);
+const ultimateDependent = require('gulp-ultimate-dependent');
 
 const WebpackStream = require('./build/WebpackStream');
 
@@ -34,34 +29,20 @@ const buildTemplate = () => {
   });
 };
 
-gulp.task('getDependencies', () => {
-  return gulp.src(viewsDir + '/**/*Page.jsx')
-    .pipe(dependencies({
-      clean: true,
-      match: /from '([.|..]+[\/]+.*)'/g,
-      basepath: '/',
-      replace: (f) => {
-        if (!f.endsWith('.js') && !f.endsWith('.jsx')) {
-          return `${f}.js`;
-        } else {
-          return f;
-        }
-      }
-    }));
-});
-
-let depObj = {};
-gulp.task('readDependencies', () => {
-  return readFileAsync('dependencies.json').then((res) => {
-    depObj = JSON.parse(res);
-    return Promise.resolve();
-  });
-});
-
 const firstRun = Date.now();
 const incrementalBuild = () => {
   return gulp.src(['src/**/*.{js,jsx}'], { since: gulp.lastRun(incrementalBuild) || firstRun })
-    .pipe(new PageDependencyFinder({ depObj: depObj }))
+    .pipe(ultimateDependent({
+      ultimateGlob: path.join(viewsDir + '/**/*Page.jsx'),
+      ultimateMatch: (f) => { return f.endsWith('Page.jsx'); },
+      matchRegex: [
+        /require\('([.|..]+[\/]+.*)'\)/g,
+        /from '([.|..]+[\/]+.*)'/g
+      ],
+      replaceMatched: (f) => {
+        return (!f.endsWith('.js') && !f.endsWith('.jsx')) ? `${f}.js` : f;
+      }
+    }))
     .pipe(buildTemplate())
     .pipe(rename((path) => {
       path.dirname = '/';
@@ -123,8 +104,6 @@ gulp.task('defaultDev', gulp.series(
 
 gulp.task('watchJs', () => {
   gulp.watch(['src/**/*.{js,jsx}'], gulp.series(
-    'getDependencies',
-    'readDependencies',
     incrementalBuild
   ));
 });
