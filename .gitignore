@@ -3,4 +3,3 @@ npm-debug.log
 .DS_Store
 static/
 build/output
-dependencies.json
